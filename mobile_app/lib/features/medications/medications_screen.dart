@@ -9,7 +9,7 @@ final Random _random = Random();
 class MedicationsScreen extends StatefulWidget {
   const MedicationsScreen({super.key});
   static const int n = 10;
-  static List<Medication> medicationList = List.generate(
+  static final List<Medication> medicationList = List.generate(
     10,
     (index) => Medication(
       id: index.toString(),
@@ -32,6 +32,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
       body: ListView.builder(
         itemCount: MedicationsScreen.medicationList.length,
         itemBuilder: (context, index) {
+          int medTime = int.parse(MedicationsScreen.medicationList[index].time);
           return Padding(
             padding: const EdgeInsets.only(
               top: 8.0,
@@ -56,7 +57,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                     style: const TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   Text(
-                    "Time: ${int.parse(MedicationsScreen.medicationList[index].time) % 12 == 0 ? 12 : (int.parse(MedicationsScreen.medicationList[index].time) % 12).toString()} ${int.parse(MedicationsScreen.medicationList[index].time) < 12 ? 'AM' : 'PM'}",
+                    "Time: ${medTime % 12 == 0 ? 12 : (medTime % 12).toString()} ${medTime < 12 ? 'AM' : 'PM'}",
                     style: const TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   Row(
@@ -68,61 +69,16 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
                           fontSize: 16,
                         ),
                       ),
-                      Icon(
-                        Icons.circle,
-                        color:
-                            MedicationsScreen.medicationList[index].frequency[0]
-                            ? Colors.greenAccent
-                            : Colors.redAccent,
-                        size: 15,
-                      ),
-                      Icon(
-                        Icons.circle,
-                        color:
-                            MedicationsScreen.medicationList[index].frequency[1]
-                            ? Colors.greenAccent
-                            : Colors.redAccent,
-                        size: 15,
-                      ),
-                      Icon(
-                        Icons.circle,
-                        color:
-                            MedicationsScreen.medicationList[index].frequency[2]
-                            ? Colors.greenAccent
-                            : Colors.redAccent,
-                        size: 15,
-                      ),
-                      Icon(
-                        Icons.circle,
-                        color:
-                            MedicationsScreen.medicationList[index].frequency[3]
-                            ? Colors.greenAccent
-                            : Colors.redAccent,
-                        size: 15,
-                      ),
-                      Icon(
-                        Icons.circle,
-                        color:
-                            MedicationsScreen.medicationList[index].frequency[4]
-                            ? Colors.greenAccent
-                            : Colors.redAccent,
-                        size: 15,
-                      ),
-                      Icon(
-                        Icons.circle,
-                        color:
-                            MedicationsScreen.medicationList[index].frequency[5]
-                            ? Colors.greenAccent
-                            : Colors.redAccent,
-                        size: 15,
-                      ),
-                      Icon(
-                        Icons.circle,
-                        color:
-                            MedicationsScreen.medicationList[index].frequency[6]
-                            ? Colors.greenAccent
-                            : Colors.redAccent,
-                        size: 15,
+                      const SizedBox(width: 4),
+                      ...List.generate(
+                        7,
+                        (dayIndex) => Icon(
+                          Icons.circle,
+                          color: MedicationsScreen.medicationList[index].frequency[dayIndex]
+                              ? Colors.greenAccent
+                              : Colors.redAccent,
+                          size: 15,
+                        ),
                       ),
                     ],
                   ),
