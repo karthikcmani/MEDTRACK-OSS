@@ -10,7 +10,7 @@ class AddMedicationScreen extends StatefulWidget {
 class _AddMedicationScreenState extends State<AddMedicationScreen> {
   final _formKey = GlobalKey<FormState>();
   TimeOfDay timeOfDay = TimeOfDay.now();
-  List<bool> selectedDays = [false, false, false, false, false, false, false];
+  List<bool> selectedDays = [true, true, true, true, true, true, true];
   List<String> days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   @override
@@ -57,6 +57,51 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                     filled: true,
                     fillColor: Colors.grey[100],
                     hintText: 'Enter dosage',
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextFormField(
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the frequency';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    hintText: 'Enter frequency',
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextFormField(
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter the purpose';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    hintText: 'Enter purpose',
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextFormField(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    hintText: 'Enter an Icon',
                   ),
                 ),
                 SizedBox(height: 32),
