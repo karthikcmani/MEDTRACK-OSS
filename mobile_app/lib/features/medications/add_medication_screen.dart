@@ -60,31 +60,6 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                   ),
                 ),
                 SizedBox(height: 32),
-                ElevatedButton(
-                  onPressed: () async {
-                    final TimeOfDay? picked = await showTimePicker(
-                      context: context,
-                      initialTime: timeOfDay,
-                    );
-                    if (picked != null) {
-                      setState(() {
-                        timeOfDay = picked;
-                      });
-                    }
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(width: 8),
-                      Icon(Icons.access_time),
-                      SizedBox(width: 8),
-                      Text(timeOfDay.format(context).toString()),
-                      SizedBox(width: 8),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 32),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
