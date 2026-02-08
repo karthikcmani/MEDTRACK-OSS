@@ -1,10 +1,6 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../../models/medication.dart';
-
-final Random _random = Random();
 
 class MedicationsScreen extends StatefulWidget {
   const MedicationsScreen({super.key});
