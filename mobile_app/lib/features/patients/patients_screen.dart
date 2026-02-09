@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/patient.dart';
 import 'widgets/patient_card.dart';
 import 'widgets/patient_details_view.dart';
+import 'add_patient_screen.dart';
 
 class PatientsScreen extends StatefulWidget {
   const PatientsScreen({super.key});
@@ -68,10 +69,13 @@ class _PatientsScreenState extends State<PatientsScreen> {
 
   List<Patient> get _filteredPatients {
     if (_searchQuery.isEmpty) return _patients;
-    return _patients.where((p) =>
-      p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-      p.condition.toLowerCase().contains(_searchQuery.toLowerCase())
-    ).toList();
+    return _patients
+        .where(
+          (p) =>
+              p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              p.condition.toLowerCase().contains(_searchQuery.toLowerCase()),
+        )
+        .toList();
   }
 
   @override
@@ -81,23 +85,32 @@ class _PatientsScreenState extends State<PatientsScreen> {
       appBar: AppBar(
         title: Text(
           'Patients',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             color: Theme.of(context).primaryColor,
-            onPressed: () {
-             
+            onPressed: () async {
+              final newPatient = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddPatientScreen(),
+                ),
+              );
+              if (newPatient != null && newPatient is Patient) {
+                setState(() {
+                  _patients.add(
+                    newPatient,
+                  );
+                });
+              }
             },
           ),
         ],
@@ -131,9 +144,9 @@ class _PatientsScreenState extends State<PatientsScreen> {
         onChanged: (value) => setState(() => _searchQuery = value),
         decoration: InputDecoration(
           hintText: 'Search patients, conditions...',
-          hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[500],
-              ),
+          hintStyle: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: Colors.grey[500]),
           prefixIcon: const Icon(Icons.search),
           filled: true,
           fillColor: Colors.grey[100],
@@ -141,7 +154,10 @@ class _PatientsScreenState extends State<PatientsScreen> {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
         ),
       ),
     );

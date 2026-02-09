@@ -11,9 +11,7 @@ class PatientDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
-      
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Text('Patient Profile'),
@@ -58,25 +56,25 @@ class PatientDetailsView extends StatelessWidget {
               child: Text(
                 patient.name.substring(0, 1).toUpperCase(),
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
           const SizedBox(height: 16),
           Text(
             patient.name,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'ID: ${patient.id}',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey[800],
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: Colors.grey[800]),
           ),
           const SizedBox(height: 16),
           Row(
@@ -122,17 +120,41 @@ class PatientDetailsView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Expanded(child: _buildInfoCard(context, 'Blood Pressure', '120/80', 'mmHg', Colors.blue)),
+          Expanded(
+            child: _buildInfoCard(
+              context,
+              'Blood Pressure',
+              '120/80',
+              'mmHg',
+              Colors.blue,
+            ),
+          ),
           const SizedBox(width: 16),
-          Expanded(child: _buildInfoCard(context, 'Heart Rate', '72', 'bpm', Colors.red)),
+          Expanded(
+            child: _buildInfoCard(
+              context,
+              'Heart Rate',
+              '72',
+              'bpm',
+              Colors.red,
+            ),
+          ),
           const SizedBox(width: 16),
-          Expanded(child: _buildInfoCard(context, 'Weight', '70', 'kg', Colors.orange)),
+          Expanded(
+            child: _buildInfoCard(context, 'Weight', '70', 'kg', Colors.orange),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, String title, String value, String unit, Color color) {
+  Widget _buildInfoCard(
+    BuildContext context,
+    String title,
+    String value,
+    String unit,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -148,20 +170,26 @@ class PatientDetailsView extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(title, style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: Colors.grey,
-          )),
+          Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.labelMedium?.copyWith(color: Colors.grey),
+          ),
           const SizedBox(height: 8),
           Text(
             value,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
-          Text(unit, style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey,
-          )),
+          Text(
+            unit,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+          ),
         ],
       ),
     );
@@ -227,9 +255,9 @@ class PatientDetailsView extends StatelessWidget {
         children: [
           Text(
             'Recent Activity',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           _buildHistoryItem(
@@ -255,7 +283,12 @@ class PatientDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildHistoryItem(BuildContext context, String title, String subtitle, IconData icon) {
+  Widget _buildHistoryItem(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -268,9 +301,12 @@ class PatientDetailsView extends StatelessWidget {
           ),
           child: Icon(icon, color: Colors.blue),
         ),
-        title: Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-        )),
+        title: Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
         subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodyMedium),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {},

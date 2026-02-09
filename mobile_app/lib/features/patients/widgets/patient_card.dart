@@ -70,19 +70,22 @@ class PatientCard extends StatelessWidget {
                     Text(
                       patient.name,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${patient.condition} • ${patient.age} yrs • ${patient.gender}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: _getStatusColor(patient.status),
                         borderRadius: BorderRadius.circular(8),
@@ -90,9 +93,9 @@ class PatientCard extends StatelessWidget {
                       child: Text(
                         patient.status,
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: _getStatusTextColor(patient.status),
-                              fontWeight: FontWeight.bold,
-                            ),
+                          color: _getStatusTextColor(patient.status),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
