@@ -3,6 +3,7 @@ import '../../models/patient.dart';
 import 'widgets/patient_card.dart';
 import 'widgets/patient_details_view.dart';
 import 'add_patient_screen.dart';
+import 'widgets/patient_filter.dart';
 
 class PatientsScreen extends StatefulWidget {
   const PatientsScreen({super.key});
@@ -12,6 +13,7 @@ class PatientsScreen extends StatefulWidget {
 }
 
 class _PatientsScreenState extends State<PatientsScreen> {
+  String _selectedStatus = 'All';
   final List<Patient> _patients = [
     Patient(
       id: 'P001',
@@ -68,14 +70,15 @@ class _PatientsScreenState extends State<PatientsScreen> {
   String _searchQuery = '';
 
   List<Patient> get _filteredPatients {
-    if (_searchQuery.isEmpty) return _patients;
-    return _patients
-        .where(
-          (p) =>
-              p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              p.condition.toLowerCase().contains(_searchQuery.toLowerCase()),
-        )
-        .toList();
+    return _patients.where((p) {
+      final bool matchesSearch =
+          _searchQuery.isEmpty ||
+          p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          p.condition.toLowerCase().contains(_searchQuery.toLowerCase());
+      final bool matchesStatus =
+          _selectedStatus == 'All' || p.status == _selectedStatus;
+      return matchesSearch && matchesStatus;
+    }).toList();
   }
 
   @override
@@ -93,7 +96,22 @@ class _PatientsScreenState extends State<PatientsScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         actions: [
-          IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () async {
+              final String? result = await showModalBottomSheet<String>(
+                context: context,
+                builder: (BuildContext context) {
+                  return const PatientFilter();
+                },
+              );
+              if (result != null) {
+                setState(() {
+                  _selectedStatus = result;
+                });
+              }
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             color: Theme.of(context).primaryColor,
@@ -106,9 +124,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
               );
               if (newPatient != null && newPatient is Patient) {
                 setState(() {
-                  _patients.add(
-                    newPatient,
-                  );
+                  _patients.add(newPatient);
                 });
               }
             },
