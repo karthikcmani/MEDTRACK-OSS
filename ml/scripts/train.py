@@ -1,3 +1,6 @@
+# This script generates a sample dataset for demonstration purposes.
+# The CSV file in datasets/ can be used directly as an example.
+
 import pandas as pd
 import os
 
