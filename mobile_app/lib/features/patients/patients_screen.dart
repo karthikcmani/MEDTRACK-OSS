@@ -66,17 +66,36 @@ class _PatientsScreenState extends State<PatientsScreen> {
   ];
 
   String _searchQuery = '';
+  String? _selectedGender;
+  String? _selectedCondition;
 
   List<Patient> get _filteredPatients {
-    if (_searchQuery.isEmpty) return _patients;
     return _patients
-        .where(
-          (p) =>
+        .where((p) {
+          final matchesSearch =
+              _searchQuery.isEmpty ||
               p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              p.condition.toLowerCase().contains(_searchQuery.toLowerCase()),
-        )
+              p.condition.toLowerCase().contains(_searchQuery.toLowerCase());
+
+          final matchesGender =
+              _selectedGender == null || p.gender == _selectedGender;
+
+          final matchesCondition =
+              _selectedCondition == null || p.condition == _selectedCondition;
+
+          return matchesSearch && matchesGender && matchesCondition;
+        })
         .toList();
   }
+
+  List<String> get _availableGenders =>
+      _patients.map((p) => p.gender).toSet().toList()..sort();
+
+  List<String> get _availableConditions =>
+      _patients.map((p) => p.condition).toSet().toList()..sort();
+
+  bool get _hasActiveFilters =>
+      _selectedGender != null || _selectedCondition != null;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +112,13 @@ class _PatientsScreenState extends State<PatientsScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         actions: [
-          IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
+          IconButton(
+            icon: Icon(
+              Icons.filter_list,
+              color: _hasActiveFilters ? Theme.of(context).primaryColor : null,
+            ),
+            onPressed: _openFilterSheet,
+          ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             color: Theme.of(context).primaryColor,
@@ -118,6 +143,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
       body: Column(
         children: [
           _buildSearchBar(),
+          if (_hasActiveFilters) _buildActiveFilters(),
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.only(top: 8, bottom: 24),
@@ -160,6 +186,147 @@ class _PatientsScreenState extends State<PatientsScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildActiveFilters() {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          if (_selectedGender != null)
+            Chip(
+              label: Text('Gender: $_selectedGender'),
+              onDeleted: () => setState(() => _selectedGender = null),
+            ),
+          if (_selectedCondition != null)
+            Chip(
+              label: Text('Condition: $_selectedCondition'),
+              onDeleted: () => setState(() => _selectedCondition = null),
+            ),
+          ActionChip(
+            label: const Text('Clear all'),
+            onPressed: () {
+              setState(() {
+                _selectedGender = null;
+                _selectedCondition = null;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openFilterSheet() async {
+    String? tempGender = _selectedGender;
+    String? tempCondition = _selectedCondition;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Filter Patients',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String?>(
+                    initialValue: tempGender,
+                    decoration: const InputDecoration(
+                      labelText: 'Gender',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: <DropdownMenuItem<String?>>[
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('All genders'),
+                      ),
+                      ..._availableGenders.map(
+                        (gender) => DropdownMenuItem<String?>(
+                          value: gender,
+                          child: Text(gender),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) => setModalState(() => tempGender = value),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String?>(
+                    initialValue: tempCondition,
+                    decoration: const InputDecoration(
+                      labelText: 'Condition',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: <DropdownMenuItem<String?>>[
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('All conditions'),
+                      ),
+                      ..._availableConditions.map(
+                        (condition) => DropdownMenuItem<String?>(
+                          value: condition,
+                          child: Text(condition),
+                        ),
+                      ),
+                    ],
+                    onChanged:
+                        (value) => setModalState(() => tempCondition = value),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            setModalState(() {
+                              tempGender = null;
+                              tempCondition = null;
+                            });
+                          },
+                          child: const Text('Reset'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedGender = tempGender;
+                              _selectedCondition = tempCondition;
+                            });
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Apply'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
