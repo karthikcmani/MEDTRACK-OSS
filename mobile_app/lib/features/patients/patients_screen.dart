@@ -13,7 +13,6 @@ class PatientsScreen extends StatefulWidget {
 }
 
 class _PatientsScreenState extends State<PatientsScreen> {
-  String _selectedStatus = 'All';
   final List<Patient> _patients = [
     Patient(
       id: 'P001',
@@ -68,18 +67,54 @@ class _PatientsScreenState extends State<PatientsScreen> {
   ];
 
   String _searchQuery = '';
+  String? _selectedGender;
+  String? _selectedCondition;
 
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  String? _selectedStatus;
   List<Patient> get _filteredPatients {
     return _patients.where((p) {
-      final bool matchesSearch =
+      final matchesSearch =
           _searchQuery.isEmpty ||
           p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           p.condition.toLowerCase().contains(_searchQuery.toLowerCase());
-      final bool matchesStatus =
-          _selectedStatus == 'All' || p.status == _selectedStatus;
-      return matchesSearch && matchesStatus;
+
+      final matchesStatus =
+          _selectedStatus == null || p.status == _selectedStatus;
+
+      final matchesGender =
+          _selectedGender == null || p.gender == _selectedGender;
+
+      final matchesCondition =
+          _selectedCondition == null || p.condition == _selectedCondition;
+
+      return matchesSearch &&
+          matchesGender &&
+          matchesCondition &&
+          matchesStatus;
     }).toList();
   }
+
+  List<String> get _availableGenders =>
+      _patients.map((p) => p.gender).toSet().toList()..sort();
+
+  List<String> get _availableStatus =>
+      _patients.map((p) => p.status).toSet().toList()..sort();
+
+  List<String> get _availableConditions =>
+      _patients.map((p) => p.condition).toSet().toList()..sort();
+
+  bool get _hasActiveFilters =>
+      _selectedGender != null ||
+      _selectedCondition != null ||
+      _selectedStatus != null;
 
   @override
   Widget build(BuildContext context) {
@@ -97,35 +132,24 @@ class _PatientsScreenState extends State<PatientsScreen> {
         foregroundColor: Colors.black,
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () async {
-              final String? result = await showModalBottomSheet<String>(
-                context: context,
-                builder: (BuildContext context) {
-                  return const PatientFilter();
-                },
-              );
-              if (result != null) {
-                setState(() {
-                  _selectedStatus = result;
-                });
-              }
-            },
+            icon: Icon(
+              Icons.filter_list,
+              color: _hasActiveFilters ? Theme.of(context).primaryColor : null,
+            ),
+            onPressed: _openFilterSheet,
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             color: Theme.of(context).primaryColor,
             onPressed: () async {
-              final newPatient = await Navigator.push(
+              final newPatient = await Navigator.push<Patient>(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const AddPatientScreen(),
                 ),
               );
-              if (newPatient != null && newPatient is Patient) {
-                setState(() {
-                  _patients.add(newPatient);
-                });
+              if (newPatient != null) {
+                _addPatientToList(newPatient);
               }
             },
           ),
@@ -134,6 +158,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
       body: Column(
         children: [
           _buildSearchBar(),
+          if (_hasActiveFilters) _buildActiveFilters(),
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.only(top: 8, bottom: 24),
@@ -157,6 +182,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
       padding: const EdgeInsets.all(16),
       color: Colors.white,
       child: TextField(
+        controller: _searchController,
         onChanged: (value) => setState(() => _searchQuery = value),
         decoration: InputDecoration(
           hintText: 'Search patients, conditions...',
@@ -176,6 +202,217 @@ class _PatientsScreenState extends State<PatientsScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _addPatientToList(Patient patient) {
+    final isVisibleWithCurrentView = _matchesCurrentView(patient);
+
+    setState(() {
+      _patients.add(patient);
+
+      // Ensure newly added patient is immediately visible after submission.
+      if (!isVisibleWithCurrentView) {
+        _searchQuery = '';
+        _selectedGender = null;
+        _selectedCondition = null;
+        _selectedStatus = null;
+      }
+    });
+
+    if (!isVisibleWithCurrentView) {
+      _searchController.clear();
+    }
+  }
+
+  bool _matchesCurrentView(Patient patient) {
+    final query = _searchQuery.toLowerCase();
+    final matchesSearch =
+        query.isEmpty ||
+        patient.name.toLowerCase().contains(query) ||
+        patient.condition.toLowerCase().contains(query);
+    final matchesStatus =
+        _selectedStatus == null || patient.status == _selectedStatus;
+
+    final matchesGender =
+        _selectedGender == null || patient.gender == _selectedGender;
+    final matchesCondition =
+        _selectedCondition == null || patient.condition == _selectedCondition;
+
+    return matchesSearch && matchesGender && matchesCondition && matchesStatus;
+  }
+
+  Widget _buildActiveFilters() {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          if (_selectedGender != null)
+            Chip(
+              label: Text('Gender: $_selectedGender'),
+              onDeleted: () => setState(() => _selectedGender = null),
+            ),
+          if (_selectedStatus != null)
+            Chip(
+              label: Text('Status: $_selectedStatus'),
+              onDeleted: () => setState(() => _selectedStatus = null),
+            ),
+
+          if (_selectedCondition != null)
+            Chip(
+              label: Text('Condition: $_selectedCondition'),
+              onDeleted: () => setState(() => _selectedCondition = null),
+            ),
+          ActionChip(
+            label: const Text('Clear all'),
+            onPressed: () {
+              setState(() {
+                _selectedGender = null;
+                _selectedCondition = null;
+                _selectedStatus = null;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openFilterSheet() async {
+    String? tempGender = _selectedGender;
+    String? tempCondition = _selectedCondition;
+    String? tempStatus = _selectedStatus;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Filter Patients',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String?>(
+                    initialValue: tempGender,
+                    decoration: const InputDecoration(
+                      labelText: 'Gender',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: <DropdownMenuItem<String?>>[
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('All genders'),
+                      ),
+                      ..._availableGenders.map(
+                        (gender) => DropdownMenuItem<String?>(
+                          value: gender,
+                          child: Text(gender),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) =>
+                        setModalState(() => tempGender = value),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String?>(
+                    initialValue: tempCondition,
+                    decoration: const InputDecoration(
+                      labelText: 'Condition',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: <DropdownMenuItem<String?>>[
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('All conditions'),
+                      ),
+                      ..._availableConditions.map(
+                        (condition) => DropdownMenuItem<String?>(
+                          value: condition,
+                          child: Text(condition),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) =>
+                        setModalState(() => tempCondition = value),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String?>(
+                    initialValue: tempStatus,
+                    decoration: const InputDecoration(
+                      labelText: 'Status',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: <DropdownMenuItem<String?>>[
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('All Status'),
+                      ),
+                      ..._availableStatus.map(
+                        (status) => DropdownMenuItem<String?>(
+                          value: status,
+                          child: Text(status),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) =>
+                        setModalState(() => tempStatus = value),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            setModalState(() {
+                              tempGender = null;
+                              tempCondition = null;
+                              tempStatus = null;
+                            });
+                          },
+                          child: const Text('Reset'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedGender = tempGender;
+                              _selectedCondition = tempCondition;
+                              _selectedStatus = tempStatus;
+                            });
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Apply'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
