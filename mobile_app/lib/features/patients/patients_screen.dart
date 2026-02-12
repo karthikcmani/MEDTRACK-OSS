@@ -3,6 +3,7 @@ import '../../models/patient.dart';
 import 'widgets/patient_card.dart';
 import 'widgets/patient_details_view.dart';
 import 'add_patient_screen.dart';
+import 'widgets/patient_filter.dart';
 
 class PatientsScreen extends StatefulWidget {
   const PatientsScreen({super.key});
@@ -68,6 +69,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
   String _searchQuery = '';
   String? _selectedGender;
   String? _selectedCondition;
+
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -76,33 +78,43 @@ class _PatientsScreenState extends State<PatientsScreen> {
     super.dispose();
   }
 
+  String? _selectedStatus;
   List<Patient> get _filteredPatients {
-    return _patients
-        .where((p) {
-          final matchesSearch =
-              _searchQuery.isEmpty ||
-              p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              p.condition.toLowerCase().contains(_searchQuery.toLowerCase());
+    return _patients.where((p) {
+      final matchesSearch =
+          _searchQuery.isEmpty ||
+          p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          p.condition.toLowerCase().contains(_searchQuery.toLowerCase());
 
-          final matchesGender =
-              _selectedGender == null || p.gender == _selectedGender;
+      final matchesStatus =
+          _selectedStatus == null || p.status == _selectedStatus;
 
-          final matchesCondition =
-              _selectedCondition == null || p.condition == _selectedCondition;
+      final matchesGender =
+          _selectedGender == null || p.gender == _selectedGender;
 
-          return matchesSearch && matchesGender && matchesCondition;
-        })
-        .toList();
+      final matchesCondition =
+          _selectedCondition == null || p.condition == _selectedCondition;
+
+      return matchesSearch &&
+          matchesGender &&
+          matchesCondition &&
+          matchesStatus;
+    }).toList();
   }
 
   List<String> get _availableGenders =>
       _patients.map((p) => p.gender).toSet().toList()..sort();
 
+  List<String> get _availableStatus =>
+      _patients.map((p) => p.status).toSet().toList()..sort();
+
   List<String> get _availableConditions =>
       _patients.map((p) => p.condition).toSet().toList()..sort();
 
   bool get _hasActiveFilters =>
-      _selectedGender != null || _selectedCondition != null;
+      _selectedGender != null ||
+      _selectedCondition != null ||
+      _selectedStatus != null;
 
   @override
   Widget build(BuildContext context) {
@@ -204,6 +216,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
         _searchQuery = '';
         _selectedGender = null;
         _selectedCondition = null;
+        _selectedStatus = null;
       }
     });
 
@@ -218,13 +231,15 @@ class _PatientsScreenState extends State<PatientsScreen> {
         query.isEmpty ||
         patient.name.toLowerCase().contains(query) ||
         patient.condition.toLowerCase().contains(query);
+    final matchesStatus =
+        _selectedStatus == null || patient.status == _selectedStatus;
 
     final matchesGender =
         _selectedGender == null || patient.gender == _selectedGender;
     final matchesCondition =
         _selectedCondition == null || patient.condition == _selectedCondition;
 
-    return matchesSearch && matchesGender && matchesCondition;
+    return matchesSearch && matchesGender && matchesCondition && matchesStatus;
   }
 
   Widget _buildActiveFilters() {
@@ -241,6 +256,12 @@ class _PatientsScreenState extends State<PatientsScreen> {
               label: Text('Gender: $_selectedGender'),
               onDeleted: () => setState(() => _selectedGender = null),
             ),
+          if (_selectedStatus != null)
+            Chip(
+              label: Text('Status: $_selectedStatus'),
+              onDeleted: () => setState(() => _selectedStatus = null),
+            ),
+
           if (_selectedCondition != null)
             Chip(
               label: Text('Condition: $_selectedCondition'),
@@ -252,6 +273,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
               setState(() {
                 _selectedGender = null;
                 _selectedCondition = null;
+                _selectedStatus = null;
               });
             },
           ),
@@ -263,6 +285,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
   Future<void> _openFilterSheet() async {
     String? tempGender = _selectedGender;
     String? tempCondition = _selectedCondition;
+    String? tempStatus = _selectedStatus;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -306,7 +329,8 @@ class _PatientsScreenState extends State<PatientsScreen> {
                         ),
                       ),
                     ],
-                    onChanged: (value) => setModalState(() => tempGender = value),
+                    onChanged: (value) =>
+                        setModalState(() => tempGender = value),
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String?>(
@@ -327,8 +351,30 @@ class _PatientsScreenState extends State<PatientsScreen> {
                         ),
                       ),
                     ],
-                    onChanged:
-                        (value) => setModalState(() => tempCondition = value),
+                    onChanged: (value) =>
+                        setModalState(() => tempCondition = value),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String?>(
+                    initialValue: tempStatus,
+                    decoration: const InputDecoration(
+                      labelText: 'Status',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: <DropdownMenuItem<String?>>[
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('All Status'),
+                      ),
+                      ..._availableStatus.map(
+                        (status) => DropdownMenuItem<String?>(
+                          value: status,
+                          child: Text(status),
+                        ),
+                      ),
+                    ],
+                    onChanged: (value) =>
+                        setModalState(() => tempStatus = value),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -339,6 +385,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
                             setModalState(() {
                               tempGender = null;
                               tempCondition = null;
+                              tempStatus = null;
                             });
                           },
                           child: const Text('Reset'),
@@ -351,6 +398,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
                             setState(() {
                               _selectedGender = tempGender;
                               _selectedCondition = tempCondition;
+                              _selectedStatus = tempStatus;
                             });
                             Navigator.pop(context);
                           },
