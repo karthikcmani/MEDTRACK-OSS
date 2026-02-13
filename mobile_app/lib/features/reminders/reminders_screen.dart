@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_app/features/reminders/add_reminder_screen.dart';
 
 class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
@@ -113,8 +114,11 @@ class _RemindersScreenState extends State<RemindersScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Create reminder feature coming soon!')),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddReminderScreen(),
+            ),
           );
         },
         backgroundColor: const Color(0xFF0066CC),
@@ -219,7 +223,8 @@ class _ReminderCardState extends State<_ReminderCard> {
                               color: typeColor.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             child: Text(
                               widget.reminder.type,
                               style: TextStyle(
@@ -271,7 +276,8 @@ class _ReminderCardState extends State<_ReminderCard> {
                   color: Colors.grey[50],
                   borderRadius: BorderRadius.circular(8),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 child: Row(
                   children: [
                     Icon(
@@ -301,7 +307,9 @@ class _ReminderCardState extends State<_ReminderCard> {
                   child: OutlinedButton.icon(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Edit reminder feature coming soon!')),
+                        const SnackBar(
+                            content:
+                                Text('Edit reminder feature coming soon!')),
                       );
                     },
                     icon: const Icon(Icons.edit_rounded, size: 16),
