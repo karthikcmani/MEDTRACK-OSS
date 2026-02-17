@@ -146,8 +146,13 @@ class _ProfessionalPatientsScreenState extends State<ProfessionalPatientsScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, Routes.addPatient);
+        onPressed: () async {
+          final newPatient = await Navigator.pushNamed(context, Routes.addPatient);
+          if (newPatient != null && newPatient is Patient) {
+            setState(() {
+              _patients.add(newPatient);
+            });
+          }
         },
         child: const Icon(Icons.add),
       ),
