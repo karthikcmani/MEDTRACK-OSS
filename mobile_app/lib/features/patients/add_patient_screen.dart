@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/patient.dart';
 
 class AddPatientScreen extends StatefulWidget {
-  const AddPatientScreen({super.key});
+  final Patient? patient;
+  const AddPatientScreen({super.key, this.patient});
   static const String route = '/add_patient';
 
   @override
@@ -11,11 +12,11 @@ class AddPatientScreen extends StatefulWidget {
 
 class _AddPatientScreenState extends State<AddPatientScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _name = '';
-  int _age = 0;
-  String _condition = '';
-  String _gender = '';
-  String _status = 'Stable';
+  late String _name;
+  late int _age;
+  late String _condition;
+  late String _gender;
+  late String _status;
   bool _isGenderFocused = false;
   String? _genderError;
   String? _statusError;
@@ -23,8 +24,18 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
   bool _isStatusFocused = false; // Tracking focus for status box
   final FocusNode _statusFocusNode = FocusNode(); // Unique node for status
 
+  @override
+  void initState() {
+    super.initState();
+    _name = widget.patient?.name ?? '';
+    _age = widget.patient?.age ?? 0;
+    _condition = widget.patient?.condition ?? '';
+    _gender = widget.patient?.gender ?? '';
+    _status = widget.patient?.status ?? 'Stable';
+  }
+
   String _generatePatientId() {
-    return 'P${DateTime.now().millisecondsSinceEpoch}';
+    return widget.patient?.id ?? 'P${DateTime.now().millisecondsSinceEpoch}';
   }
 
   @override
@@ -41,7 +52,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text("Add New Patient")),
+        appBar: AppBar(title: Text(widget.patient == null ? "Add New Patient" : "Edit Patient")),
         body: Padding(
           padding: EdgeInsets.all(20),
           child: Form(
@@ -50,6 +61,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
               child: Column(
                 children: [
                 TextFormField(
+                  initialValue: _name,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Please Enter Patient's Name";
@@ -88,6 +100,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                 ),
                 SizedBox(height: 15),
                 TextFormField(
+                  initialValue: _age == 0 ? '' : _age.toString(),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Please Enter Patient's Age";
@@ -167,7 +180,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                         RadioListTile<String>(
                           title: const Text('Male'),
                           value: 'Male',
-                          groupValue: _gender,
+                          groupValue: _gender.isNotEmpty ? _gender : null,
                           onChanged: (value) => setState(() {
                             _gender = value!;
                             _genderFocusNode.requestFocus();
@@ -176,7 +189,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                         RadioListTile<String>(
                           title: const Text('Female'),
                           value: 'Female',
-                          groupValue: _gender,
+                          groupValue: _gender.isNotEmpty ? _gender : null,
                           onChanged: (value) => setState(() {
                             _gender = value!;
                             _genderFocusNode.requestFocus();
@@ -188,6 +201,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                 ),
                 SizedBox(height: 15),
                 TextFormField(
+                  initialValue: _condition,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Please Enter Patient's Condition";
@@ -254,7 +268,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                         RadioListTile<String>(
                           title: const Text('Stable'),
                           value: 'Stable',
-                          groupValue: _status,
+                          groupValue: _status.isNotEmpty ? _status : null,
                           onChanged: (value) => setState(() {
                             _status = value!;
                             _statusFocusNode.requestFocus();
@@ -263,7 +277,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                         RadioListTile<String>(
                           title: const Text('Critical'),
                           value: 'Critical',
-                          groupValue: _status,
+                          groupValue: _status.isNotEmpty ? _status : null,
                           onChanged: (value) => setState(() {
                             _status = value!;
                             _statusFocusNode.requestFocus();
@@ -272,7 +286,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                         RadioListTile<String>(
                           title: const Text('Recovering'),
                           value: 'Recovering',
-                          groupValue: _status,
+                          groupValue: _status.isNotEmpty ? _status : null,
                           onChanged: (value) => setState(() {
                             _status = value!;
                             _statusFocusNode.requestFocus();
@@ -312,12 +326,13 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                           gender: _gender,
                           condition: _condition,
                           status: _status,
-                          lastVisit: DateTime.now(),
+                          lastVisit: widget.patient?.lastVisit ?? DateTime.now(),
+                          phoneNumber: widget.patient?.phoneNumber ?? 'N/A',
                         );
                         Navigator.pop(context, newPatient);
                       }
                     },
-                    child: Text("Add Patient️"),
+                    child: Text(widget.patient == null ? "Add Patient️" : "Save Changes"),
                   ),
                 ],
               ),
