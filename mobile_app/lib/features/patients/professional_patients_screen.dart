@@ -3,6 +3,7 @@ import 'package:mobile_app/routes.dart';
 import '../../models/patient.dart';
 import 'widgets/patient_card.dart';
 import '../../models/appointment.dart';
+import '../../models/patient_note.dart';
 import 'package:uuid/uuid.dart';
 
 class ProfessionalPatientsScreen extends StatefulWidget {
@@ -32,6 +33,16 @@ class _ProfessionalPatientsScreenState extends State<ProfessionalPatientsScreen>
           time: const TimeOfDay(hour: 10, minute: 30),
           type: 'Follow-up',
           notes: 'Regular checkup for hypertension',
+        ),
+      ],
+      notes: [
+        PatientNote(
+          id: const Uuid().v4(),
+          patientId: 'P001',
+          title: 'Initial Consultation',
+          content: 'Patient reported persistent headaches. Recommended further tests.',
+          category: 'Medical Condition',
+          date: DateTime.now().subtract(const Duration(days: 2)),
         ),
       ],
     ),

@@ -3,6 +3,7 @@ import 'package:mobile_app/routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../models/patient.dart';
 import '../../../models/appointment.dart';
+import '../../../models/patient_note.dart';
 
 class PatientDetailsView extends StatefulWidget {
   final Patient patient;
@@ -322,12 +323,21 @@ class _PatientDetailsViewState extends State<PatientDetailsView> {
               );
             }
           }),
-          _buildActionButton(context, Icons.note_add, 'Add Note', Colors.orange, onTap: () {
-            Navigator.pushNamed(
+          _buildActionButton(context, Icons.note_add, 'Add Note', Colors.orange, onTap: () async {
+            final result = await Navigator.pushNamed(
               context,
               Routes.addPatientNote,
               arguments: _currentPatient,
             );
+            
+            if (result != null && result is PatientNote) {
+              setState(() {
+                _currentPatient.notes.add(result);
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Note added successfully')),
+              );
+            }
           }),
         ],
       ),
@@ -405,8 +415,66 @@ class _PatientDetailsViewState extends State<PatientDetailsView> {
             'Blood work • 1 week ago',
             Icons.science,
           ),
+          const SizedBox(height: 24),
+          _buildNotesList(context),
         ],
       ),
+    );
+  }
+
+  Widget _buildNotesList(BuildContext context) {
+    if (_currentPatient.notes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Clinical Notes',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        ..._currentPatient.notes.map((note) => Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      note.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        note.category,
+                        style: const TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(note.content),
+                const SizedBox(height: 8),
+                Text(
+                  '${note.date.day}/${note.date.month}/${note.date.year}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        )),
+      ],
     );
   }
 
