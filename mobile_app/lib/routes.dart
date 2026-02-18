@@ -33,8 +33,6 @@ Map<String, WidgetBuilder> getRoutes() {
     Routes.home: (context) => const MainScreen(),
     Routes.patients: (context) => const PatientsScreen(),
     Routes.professionalPatients: (context) => const ProfessionalPatientsScreen(),
-    Routes.medications: (context) => const MedicationsScreen(),
-    Routes.addMedication: (context) => const AddMedicationScreen(),
     Routes.schedules: (context) => const SchedulesScreen(),
     Routes.reminders: (context) => const RemindersScreen(),
     Routes.addReminder: (context) => const AddReminderScreen(),

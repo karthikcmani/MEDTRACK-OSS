@@ -13,7 +13,7 @@ class MedicationsScreen extends StatefulWidget {
 
 class _MedicationsScreenState extends State<MedicationsScreen> {
   // Mock medication data
-  final List<Medication> medications = [
+  List<Medication> medications = [
     Medication(
       id: 1,
       name: 'Lisinopril',
@@ -122,7 +122,10 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
               itemCount: filteredMeds.length,
               itemBuilder: (context, index) {
                 final medication = filteredMeds[index];
-                return _MedicationCard(medication: medication);
+                return _MedicationCard(
+                  medication: medication,
+                  onEdit: () => _editMedication(context, medication),
+                );
               },
             ),
           ),
@@ -130,13 +133,42 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'medication_fab',
-        onPressed: () {
-          Navigator.pushNamedAndRemoveUntil(context, Routes.addMedication, ModalRoute.withName(Routes.medications));
+        onPressed: () async {
+          await _newMedication(context);
         },
         backgroundColor: const Color(0xFF0066CC),
         child: const Icon(Icons.add_rounded),
       ),
     );
+  }
+
+  Future<void> _newMedication(BuildContext context) async {
+    final newMedication = await Navigator.pushNamed(
+      context,
+      Routes.addMedication
+    );
+    if (newMedication != null && newMedication is Medication) {
+      setState(() {
+        medications.add(newMedication);
+      });
+    }
+  }
+
+  Future<void> _editMedication(BuildContext context, Medication medicationToEdit) async {
+    final updatedMedication = await Navigator.pushNamed(
+      context,
+      Routes.addMedication,
+      arguments: medicationToEdit
+    );
+    
+    if (updatedMedication != null && updatedMedication is Medication) {
+      setState(() {
+        int index = medications.indexWhere((m) => m.id == updatedMedication.id);
+        if (index != -1) {
+          medications[index] = updatedMedication;
+        }
+      });
+    }
   }
 }
 
@@ -179,8 +211,9 @@ class _FilterChip extends StatelessWidget {
 
 class _MedicationCard extends StatelessWidget {
   final Medication medication;
+  final VoidCallback onEdit;
 
-  const _MedicationCard({required this.medication});
+  const _MedicationCard({required this.medication, required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -322,11 +355,7 @@ class _MedicationCard extends StatelessWidget {
                   ),
                 ),
                 OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Edit medication feature coming soon!')),
-                    );
-                  },
+                  onPressed: onEdit,
                   icon: const Icon(Icons.edit_rounded, size: 16),
                   label: const Text('Edit'),
                 ),
