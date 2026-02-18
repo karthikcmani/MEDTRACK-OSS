@@ -4,6 +4,11 @@ import '../../models/patient.dart';
 class AddPatientScreen extends StatefulWidget {
   final Patient? patient;
   const AddPatientScreen({super.key, this.patient});
+  final Patient? existingPatient; // Optional for editing
+  const AddPatientScreen({
+    super.key,
+    this.existingPatient
+  });
   static const String route = '/add_patient';
 
   @override
@@ -11,6 +16,8 @@ class AddPatientScreen extends StatefulWidget {
 }
 
 class _AddPatientScreenState extends State<AddPatientScreen> {
+  bool get isEditing => widget.existingPatient != null;
+
   final _formKey = GlobalKey<FormState>();
   late String _name;
   late int _age;
@@ -32,6 +39,14 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
     _condition = widget.patient?.condition ?? '';
     _gender = widget.patient?.gender ?? '';
     _status = widget.patient?.status ?? 'Stable';
+    if (isEditing) {
+      final patient = widget.existingPatient!;
+      _name = patient.name;
+      _age = patient.age;
+      _gender = patient.gender;
+      _condition = patient.condition;
+      _status = patient.status;
+    }
   }
 
   String _generatePatientId() {
@@ -53,6 +68,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
       },
       child: Scaffold(
         appBar: AppBar(title: Text(widget.patient == null ? "Add New Patient" : "Edit Patient")),
+        appBar: AppBar(title: Text(isEditing ? "Edit Patient" : "Add New Patient")),
         body: Padding(
           padding: EdgeInsets.all(20),
           child: Form(
@@ -101,6 +117,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                 SizedBox(height: 15),
                 TextFormField(
                   initialValue: _age == 0 ? '' : _age.toString(),
+                  initialValue: _age.toString(),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Please Enter Patient's Age";
@@ -319,6 +336,20 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                           _gender.isNotEmpty &&
                           _status.isNotEmpty) {
                         _formKey.currentState!.save();
+                        if (isEditing) {
+                          final updatedPatient = Patient(
+                            id: widget.existingPatient!.id,
+                            name: _name,
+                            age: _age,
+                            gender: _gender,
+                            condition: _condition,
+                            status: _status,
+                            lastVisit: widget.existingPatient!.lastVisit,
+                            phoneNumber: widget.existingPatient!.phoneNumber,
+                          );
+                          Navigator.pop(context, updatedPatient);
+                          return;
+                        }
                         final newPatient = Patient(
                           id: _generatePatientId(),
                           name: _name,
@@ -333,6 +364,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                       }
                     },
                     child: Text(widget.patient == null ? "Add Patient️" : "Save Changes"),
+                    child: Text(isEditing ? "Update Patient" : "Add Patient"),
                   ),
                 ],
               ),

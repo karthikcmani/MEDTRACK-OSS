@@ -66,6 +66,43 @@ class _PatientDetailsViewState extends State<PatientDetailsView> {
                 ];
               },
             ),
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context, _currentPatient),
+          tooltip: 'Back',
+        ),
+        title: const Text('Patient Profile'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              final result = await Navigator.pushNamed(
+                context,
+                Routes.addPatient,
+                arguments: _currentPatient,
+              );
+              if (result is Patient) {
+                setState(() {
+                  _currentPatient = result;
+                });
+              }
+            },
+            icon: const Icon(Icons.edit),
+          ),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildHeader(context),
+            const SizedBox(height: 16),
+            _buildStatsGrid(context),
+            const SizedBox(height: 16),
+            _buildActionButtons(context),
+            const SizedBox(height: 24),
+            _buildMedicalHistory(context),
           ],
         ),
         body: SingleChildScrollView(
