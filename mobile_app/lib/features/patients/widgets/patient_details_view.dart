@@ -422,60 +422,148 @@ class _PatientDetailsViewState extends State<PatientDetailsView> {
     );
   }
 
-  Widget _buildNotesList(BuildContext context) {
-    if (_currentPatient.notes.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Clinical Notes',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        ..._currentPatient.notes.map((note) => Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      note.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+        ..._currentPatient.notes.map(
+          (note) => Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        note.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                      child: Text(
-                        note.category,
-                        style: const TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              note.category,
+                              style: const TextStyle(
+                                color: Colors.orange,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.edit,
+                              size: 20,
+                              color: Colors.blue,
+                            ),
+                            onPressed: () => _editNote(note),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete,
+                              size: 20,
+                              color: Colors.red,
+                            ),
+                            onPressed: () => _deleteNote(note),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(note.content),
-                const SizedBox(height: 8),
-                Text(
-                  '${note.date.day}/${note.date.month}/${note.date.year}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                ),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(note.content),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${note.date.day}/${note.date.month}/${note.date.year}',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                ],
+              ),
             ),
           ),
-        )),
+        ),
       ],
     );
+  }
+
+  Future<void> _editNote(PatientNote note) async {
+    final result = await Navigator.pushNamed(context, Routes.addPatientNote, arguments: {
+      'patient': _currentPatient,
+      'note': note,
+    });
+
+    if (result != null && result is PatientNote) {
+      setState(() {
+        final index = _currentPatient.notes.indexWhere((n) => n.id == note.id);
+        if (index != -1) {
+          _currentPatient.notes[index] = result;
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Note updated successfully')),
+      );
+    }
+  }
+
+  Future<void> _deleteNote(PatientNote note) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete Note'),
+          content: const Text('Are you sure you want to delete this note?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      setState(() {
+        _currentPatient.notes.removeWhere((n) => n.id == note.id);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Note deleted successfully')),
+      );
+    }
   }
 
   Widget _buildHistoryItem(

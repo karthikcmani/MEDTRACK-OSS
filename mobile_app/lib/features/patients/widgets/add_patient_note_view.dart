@@ -5,8 +5,14 @@ import 'package:uuid/uuid.dart';
 
 class AddPatientNoteView extends StatefulWidget {
   final Patient patient;
+  final PatientNote? noteToEdit;
   static const String route = '/add_patient_note';
-  const AddPatientNoteView({super.key, required this.patient});
+
+  const AddPatientNoteView({
+    super.key,
+    required this.patient,
+    this.noteToEdit,
+  });
 
   @override
   State<AddPatientNoteView> createState() => _AddPatientNoteViewState();
@@ -27,6 +33,20 @@ class _AddPatientNoteViewState extends State<AddPatientNoteView> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.noteToEdit != null) {
+      _titleController.text = widget.noteToEdit!.title;
+      _noteController.text = widget.noteToEdit!.content;
+      if (_categories.contains(widget.noteToEdit!.category)) {
+        _selectedCategory = widget.noteToEdit!.category;
+      } else {
+        _selectedCategory = 'General';
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _noteController.dispose();
     _titleController.dispose();
@@ -37,7 +57,7 @@ class _AddPatientNoteViewState extends State<AddPatientNoteView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Note'),
+        title: Text(widget.noteToEdit != null ? 'Edit Note' : 'Add Note'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -49,19 +69,21 @@ class _AddPatientNoteViewState extends State<AddPatientNoteView> {
               _buildPatientInfoCard(context),
               const SizedBox(height: 24),
               DropdownButtonFormField<String>(
-                initialValue: _selectedCategory,
+                value: _selectedCategory,
                 decoration: InputDecoration(
                   labelText: 'Category',
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   prefixIcon: const Icon(Icons.label),
                 ),
-                items: _categories.map((String category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
+                items:
+                    _categories.map((String category) {
+                      return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
                 onChanged: (String? newValue) {
                   if (newValue != null) {
                     setState(() {
@@ -76,7 +98,8 @@ class _AddPatientNoteViewState extends State<AddPatientNoteView> {
                 decoration: InputDecoration(
                   labelText: 'Title',
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   prefixIcon: const Icon(Icons.title),
                 ),
                 validator: (value) {
@@ -92,7 +115,8 @@ class _AddPatientNoteViewState extends State<AddPatientNoteView> {
                 decoration: InputDecoration(
                   labelText: 'Content',
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   prefixIcon: const Icon(Icons.description),
                   alignLabelWithHint: true,
                 ),
@@ -115,9 +139,12 @@ class _AddPatientNoteViewState extends State<AddPatientNoteView> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Save Note',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text(
+                  widget.noteToEdit != null ? 'Update Note' : 'Save Note',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -160,7 +187,7 @@ class _AddPatientNoteViewState extends State<AddPatientNoteView> {
   void _saveNote() {
     if (_formKey.currentState!.validate()) {
       final newNote = PatientNote(
-        id: const Uuid().v4(),
+        id: widget.noteToEdit?.id ?? const Uuid().v4(),
         patientId: widget.patient.id,
         title: _titleController.text,
         content: _noteController.text,
@@ -169,7 +196,13 @@ class _AddPatientNoteViewState extends State<AddPatientNoteView> {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Note Saved Successfully')),
+        SnackBar(
+          content: Text(
+            widget.noteToEdit != null
+                ? 'Note Updated Successfully'
+                : 'Note Saved Successfully',
+          ),
+        ),
       );
       Navigator.pop(context, newNote);
     }

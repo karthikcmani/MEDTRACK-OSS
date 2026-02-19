@@ -44,6 +44,15 @@ class MedTrackApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (context) => AddPatientNoteView(patient: patient),
             );
+          } else if (settings.arguments is Map<String, dynamic>) {
+            final args = settings.arguments as Map<String, dynamic>;
+            final patient = args['patient'] as Patient;
+            final note = args['note'] as PatientNote?;
+            return MaterialPageRoute(
+              builder:
+                  (context) =>
+                      AddPatientNoteView(patient: patient, noteToEdit: note),
+            );
           }
           return MaterialPageRoute(builder: (context) => _errorScreen());
         }
