@@ -18,7 +18,7 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
   int _age = 0;
   String _condition = '';
   String _gender = '';
-  String _status = '';
+  String _status = 'Stable';
   bool _isGenderFocused = false;
   String? _genderError;
   String? _statusError;
