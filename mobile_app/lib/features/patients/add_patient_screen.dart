@@ -2,13 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/patient.dart';
 
 class AddPatientScreen extends StatefulWidget {
-  final Patient? patient;
-  const AddPatientScreen({super.key, this.patient});
   final Patient? existingPatient; // Optional for editing
-  const AddPatientScreen({
-    super.key,
-    this.existingPatient
-  });
+  const AddPatientScreen({super.key, this.existingPatient});
   static const String route = '/add_patient';
 
   @override
@@ -34,11 +29,6 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
   @override
   void initState() {
     super.initState();
-    _name = widget.patient?.name ?? '';
-    _age = widget.patient?.age ?? 0;
-    _condition = widget.patient?.condition ?? '';
-    _gender = widget.patient?.gender ?? '';
-    _status = widget.patient?.status ?? 'Stable';
     if (isEditing) {
       final patient = widget.existingPatient!;
       _name = patient.name;
@@ -50,7 +40,8 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
   }
 
   String _generatePatientId() {
-    return widget.patient?.id ?? 'P${DateTime.now().millisecondsSinceEpoch}';
+    return widget.existingPatient?.id ??
+        'P${DateTime.now().millisecondsSinceEpoch}';
   }
 
   @override
@@ -67,8 +58,8 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
         FocusScope.of(context).unfocus();
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(widget.patient == null ? "Add New Patient" : "Edit Patient")),
-        appBar: AppBar(title: Text(isEditing ? "Edit Patient" : "Add New Patient")),
+        appBar:
+            AppBar(title: Text(isEditing ? "Edit Patient" : "Add New Patient")),
         body: Padding(
           padding: EdgeInsets.all(20),
           child: Form(
@@ -117,7 +108,6 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                 SizedBox(height: 15),
                 TextFormField(
                   initialValue: _age == 0 ? '' : _age.toString(),
-                  initialValue: _age.toString(),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Please Enter Patient's Age";
@@ -357,14 +347,15 @@ class _AddPatientScreenState extends State<AddPatientScreen> {
                           gender: _gender,
                           condition: _condition,
                           status: _status,
-                          lastVisit: widget.patient?.lastVisit ?? DateTime.now(),
-                          phoneNumber: widget.patient?.phoneNumber ?? 'N/A',
+                          lastVisit: widget.existingPatient?.lastVisit ??
+                              DateTime.now(),
+                          phoneNumber:
+                              widget.existingPatient?.phoneNumber ?? 'N/A',
                         );
                         Navigator.pop(context, newPatient);
                       }
                     },
-                    child: Text(widget.patient == null ? "Add Patient️" : "Save Changes"),
-                    child: Text(isEditing ? "Update Patient" : "Add Patient"),
+                    child: Text(isEditing ? "Save Changes" : "Add Patient"),
                   ),
                 ],
               ),
