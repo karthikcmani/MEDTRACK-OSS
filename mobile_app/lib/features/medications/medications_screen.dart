@@ -132,6 +132,7 @@ class _MedicationsScreenState extends State<MedicationsScreen> {
         onPressed: () {
           Navigator.pushNamedAndRemoveUntil(context, Routes.addMedication, ModalRoute.withName(Routes.medications));
         },
+        heroTag: 'add_medication_fab',
         backgroundColor: const Color(0xFF0066CC),
         child: const Icon(Icons.add_rounded),
       ),

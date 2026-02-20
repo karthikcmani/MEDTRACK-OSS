@@ -162,6 +162,7 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
             Navigator.pop(context);
           }
         },
+        heroTag: 'save_medication_fab',
         backgroundColor: Colors.greenAccent,
         child: const Icon(
           Icons.check,

@@ -177,6 +177,7 @@ class _ProfessionalPatientsScreenState extends State<ProfessionalPatientsScreen>
             });
           }
         },
+        heroTag: 'add_professional_patient_fab',
         child: const Icon(Icons.add),
       ),
     );
